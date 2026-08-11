@@ -1,0 +1,19 @@
+link-builder.html
+  s_6b6be18e5747ec::t_5fa732f046cec5 524-532,537-538
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "141570e6872002b7403b1b63603be3d5ee4bd8a5",
+  "prompts": {},
+  "sessions": {
+    "s_6b6be18e5747ec": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_011f48998ffer34C2Cp5pnE02d",
+        "model": "unknown"
+      },
+      "human_author": "Alex Cashmore <alex.cashmore@rmscloud.com>"
+    }
+  }
+}
