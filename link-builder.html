@@ -521,14 +521,21 @@
       // stricter than Firefox about popup blocking: window.open() called after
       // any async/deferred work loses the "user activation" and is blocked. A
       // synchronous, real anchor click within the click handler is treated as a
-      // genuine user navigation and is not popup-blocked. We also avoid passing
-      // "noopener" in the window.open features string (which triggers Chromium's
-      // popup heuristics) and instead set rel="noopener" on the anchor.
+      // genuine user navigation and is not popup-blocked.
+      //
+      // IMPORTANT: do NOT use rel="noreferrer". IBE+ has a referrer-based
+      // auto-execute (PageContainer: only auto-search when document.referrer is
+      // non-empty). "noreferrer" strips the referrer, so the opened page would
+      // NOT auto-execute even with valid dates — the same symptom as a direct
+      // paste. We keep rel="noopener" for security and set an explicit
+      // referrerpolicy so a referrer is always sent (origin on cross-origin),
+      // mirroring how a real click from Teams/a landing page behaves.
       function openInNewTab(url) {
         var a = document.createElement("a");
         a.href = url;
         a.target = "_blank";
-        a.rel = "noopener noreferrer";
+        a.rel = "noopener";
+        a.referrerPolicy = "strict-origin-when-cross-origin";
         // Must be in the DOM for the synthetic click to navigate in some engines.
         a.style.display = "none";
         document.body.appendChild(a);
