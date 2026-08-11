@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      rel="stylesheet"
+    />
+    <title>IBE+ Link Builder (IBEPLUS-2150)</title>
+    <style>
+      :root {
+        --bg: #f4f6fa;
+        --card: #ffffff;
+        --border: #d9dee8;
+        --ink: #1c2430;
+        --muted: #667085;
+        --accent: #2b6cff;
+        --accent-ink: #ffffff;
+        --ok: #2b7a4b;
+        --ok-bg: #e3f7e8;
+        --warn: #7a5a2b;
+        --code-bg: #0f1729;
+        --code-ink: #d7e2ff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Open Sans", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.45;
+      }
+      .wrap { max-width: 980px; margin: 0 auto; padding: 24px 18px 64px; }
+      header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+      header img { height: 34px; }
+      h1 { font-size: 22px; margin: 0; font-weight: 700; }
+      .sub { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+      .sub a { color: var(--accent); }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+      .card h2 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .grid { display: grid; gap: 12px 16px; grid-template-columns: repeat(2, 1fr); }
+      .grid.three { grid-template-columns: repeat(3, 1fr); }
+      .full { grid-column: 1 / -1; }
+      label { display: block; font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+      .hint { font-weight: 400; color: var(--muted); }
+      input, select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font: inherit;
+        font-size: 14px;
+        background: #fff;
+        color: var(--ink);
+      }
+      input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+      .row-inline { display: flex; gap: 8px; align-items: end; }
+      .row-inline > div { flex: 1; }
+      .check { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+      .check input { width: auto; }
+      .check label { margin: 0; }
+      .btn {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 9px 14px;
+        font: inherit;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .btn:hover { border-color: var(--accent); }
+      .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+      .btn.small { padding: 6px 10px; font-size: 12px; }
+      .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+      .preview {
+        background: var(--code-bg);
+        color: var(--code-ink);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+        font-size: 13px;
+        word-break: break-all;
+        white-space: pre-wrap;
+        min-height: 20px;
+      }
+      .preview .k { color: #8fd0ff; }
+      .preview .v { color: #ffd9a0; }
+      .toast {
+        position: fixed;
+        bottom: 22px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--ok);
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        opacity: 0;
+        transition: all 0.25s ease;
+        pointer-events: none;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+      .pill {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: var(--ok-bg);
+        color: var(--ok);
+        margin-left: 8px;
+      }
+      details summary { cursor: pointer; font-weight: 600; font-size: 13px; color: var(--accent); }
+      .params-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+      .params-table td { padding: 3px 6px; border-bottom: 1px solid var(--border); }
+      .params-table td:first-child { font-weight: 600; width: 90px; color: var(--muted); }
+      @media (max-width: 640px) {
+        .grid, .grid.three { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <img src="/pagestest/rms.png" alt="RMS" onerror="this.style.display='none'" />
+        <div>
+          <h1>IBE+ Link Builder<span class="pill">GA decorator</span></h1>
+        </div>
+      </header>
+      <p class="sub">
+        Build deep-link URLs to reproduce booking / auto-execute / GA
+        cross-domain scenarios. Decorates links with the GA/Ads linker params
+        (<code>_ga</code>, <code>_gl</code>, <code>gclid</code>) plus booking
+        params. See
+        <a href="https://rmscloud.atlassian.net/browse/IBEPLUS-2150" target="_blank" rel="noopener">IBEPLUS-2150</a>
+        · <a href="/pagestest/iframe-tester.html">Iframe Tester</a>
+      </p>
+
+      <div class="card">
+        <h2>Target</h2>
+        <div class="grid three">
+          <div class="full">
+            <label for="env">Environment</label>
+            <select id="env"></select>
+          </div>
+          <div>
+            <label for="clientId">Client ID</label>
+            <input id="clientId" placeholder="12274" inputmode="numeric" />
+          </div>
+          <div>
+            <label for="agentId">Agent ID</label>
+            <input id="agentId" placeholder="1" inputmode="numeric" />
+          </div>
+          <div>
+            <label for="path">Path <span class="hint">(after IDs)</span></label>
+            <input id="path" placeholder="(root) e.g. /Extras" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Booking params</h2>
+        <div class="grid three">
+          <div>
+            <label for="A">Arrival <span class="hint">A (MM/DD/YYYY)</span></label>
+            <input id="A" placeholder="10/10/2026" />
+          </div>
+          <div>
+            <label for="D">Departure <span class="hint">D (MM/DD/YYYY)</span></label>
+            <input id="D" placeholder="10/12/2026" />
+          </div>
+          <div class="row-inline">
+            <div>
+              <label>&nbsp;</label>
+              <button class="btn small" id="fillDates" type="button">Fill +30d / 2 nights</button>
+            </div>
+          </div>
+          <div>
+            <label for="Ad">Adults <span class="hint">Ad</span></label>
+            <input id="Ad" placeholder="2" inputmode="numeric" />
+          </div>
+          <div>
+            <label for="C">Children <span class="hint">C</span></label>
+            <input id="C" inputmode="numeric" />
+          </div>
+          <div>
+            <label for="I">Infants <span class="hint">I</span></label>
+            <input id="I" inputmode="numeric" />
+          </div>
+          <div>
+            <label for="Pc">Promo code <span class="hint">Pc</span></label>
+            <input id="Pc" placeholder="Beach Villa" />
+          </div>
+          <div>
+            <label for="Accom">Accom type <span class="hint">Accom</span></label>
+            <input id="Accom" inputmode="numeric" />
+          </div>
+          <div>
+            <label for="Ld">Lead day <span class="hint">Ld</span></label>
+            <input id="Ld" inputmode="numeric" />
+          </div>
+          <div>
+            <label for="mlos">Min nights <span class="hint">mlos</span></label>
+            <input id="mlos" inputmode="numeric" />
+          </div>
+          <div>
+            <label for="Ct">Category <span class="hint">Ct</span></label>
+            <input id="Ct" />
+          </div>
+          <div>
+            <label for="extra">Extra params <span class="hint">raw a=1&b=2</span></label>
+            <input id="extra" placeholder="An=2&Md=1" />
+          </div>
+        </div>
+        <div class="check">
+          <input type="checkbox" id="execute" />
+          <label for="execute">Add <code>execute=true</code> <span class="hint">(auto-execute without needing a referrer)</span></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>GA / Ads linker &amp; tracking decorator</h2>
+        <div class="grid">
+          <div class="full check">
+            <input type="checkbox" id="gaOn" checked />
+            <label for="gaOn">Decorate with GA / Ads linker params</label>
+          </div>
+          <div>
+            <label for="_ga">_ga <span class="hint">client id</span></label>
+            <input id="_ga" placeholder="GA1.1.1234567890.1700000000" />
+          </div>
+          <div>
+            <label for="_gl">_gl <span class="hint">cross-domain linker blob</span></label>
+            <input id="_gl" placeholder="1*abc123*_gcl_au*..." />
+          </div>
+          <div>
+            <label for="gclid">gclid <span class="hint">Google click id</span></label>
+            <input id="gclid" placeholder="EAIaIQ..." />
+          </div>
+          <div>
+            <label for="_fbp">_fbp <span class="hint">Meta pixel (passthrough)</span></label>
+            <input id="_fbp" placeholder="fb.2.1786331724900.8831..." />
+          </div>
+          <div class="full">
+            <label for="utm">UTM / passthrough <span class="hint">raw utm_source=teams&utm_medium=chat</span></label>
+            <input id="utm" placeholder="utm_source=teams&utm_medium=chat" />
+          </div>
+        </div>
+        <div class="btns">
+          <button class="btn small" id="genGl" type="button">Generate realistic _ga/_gl/gclid</button>
+          <button class="btn small" id="clearGa" type="button">Clear GA params</button>
+        </div>
+        <div class="note">
+          These three keys are on the IBE+ passthrough <b>denylist</b> and are
+          re-attached explicitly by the app on each booking-flow navigation to
+          keep the GA4 session continuous. Use this to verify
+          <code>_ga</code>/<code>_gl</code>/<code>gclid</code> survive the
+          search-execute URL clear.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Result</h2>
+        <div class="preview" id="preview"></div>
+        <div class="btns">
+          <button class="btn primary" id="copy" type="button">Copy link</button>
+          <button class="btn" id="open" type="button">Open in new tab</button>
+          <button class="btn" id="openTester" type="button">Open in iframe tester</button>
+          <button class="btn" id="reset" type="button">Reset all</button>
+        </div>
+        <details style="margin-top: 14px">
+          <summary>Parsed params</summary>
+          <table class="params-table" id="paramsTable"></table>
+        </details>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">Copied</div>
+
+    <script>
+      // Environments mirror the iframe-tester (Es list in the bundle).
+      var ENVS = [
+        { label: "Local dev (localhost:5173)", baseUrl: "http://localhost:5173" },
+        { label: "Test (testibe12.rmscloud.com)", baseUrl: "https://testibe12.rmscloud.com" },
+        { label: "Test Alt (testibe14.rmscloud.com)", baseUrl: "https://testibe14.rmscloud.com" },
+        { label: "Alpha (alphaibe12.rmscloud.com)", baseUrl: "https://alphaibe12.rmscloud.com" },
+        { label: "Beta (betaibe12.rmscloud.com)", baseUrl: "https://betaibe12.rmscloud.com" },
+        { label: "Live (ibe12.rmscloud.com)", baseUrl: "https://ibe12.rmscloud.com" },
+        { label: "Live Alt (ibe13.rmscloud.com)", baseUrl: "https://ibe13.rmscloud.com" },
+      ];
+
+      var LS = "ibeLinkBuilder.v1";
+      var BOOKING_FIELDS = ["A", "D", "Ad", "C", "I", "Pc", "Accom", "Ld", "mlos", "Ct"];
+      var GA_FIELDS = ["_ga", "_gl", "gclid", "_fbp"];
+      var TEXT_FIELDS = ["clientId", "agentId", "path", "extra", "utm"].concat(BOOKING_FIELDS, GA_FIELDS);
+      var CHECK_FIELDS = ["execute", "gaOn"];
+
+      var $ = function (id) { return document.getElementById(id); };
+
+      // Populate env dropdown
+      var envSel = $("env");
+      ENVS.forEach(function (e, i) {
+        var o = document.createElement("option");
+        o.value = String(i);
+        o.textContent = e.label;
+        envSel.appendChild(o);
+      });
+
+      function loadState() {
+        var s = {};
+        try { s = JSON.parse(localStorage.getItem(LS) || "{}"); } catch (e) {}
+        if (s.env != null && ENVS[s.env]) envSel.value = String(s.env);
+        TEXT_FIELDS.forEach(function (f) { if (s[f] != null) $(f).value = s[f]; });
+        CHECK_FIELDS.forEach(function (f) { if (s[f] != null) $(f).checked = !!s[f]; });
+      }
+
+      function saveState() {
+        var s = { env: Number(envSel.value) };
+        TEXT_FIELDS.forEach(function (f) { s[f] = $(f).value; });
+        CHECK_FIELDS.forEach(function (f) { s[f] = $(f).checked; });
+        try { localStorage.setItem(LS, JSON.stringify(s)); } catch (e) {}
+      }
+
+      // Build the final URL. Booking params are kept RAW (not re-encoded) to
+      // mirror how the app receives unencoded dates like A=10/10/2026.
+      function buildParts() {
+        var pairs = []; // {k, v}
+        function add(k, v) {
+          if (v == null) return;
+          v = String(v).trim();
+          if (v === "") return;
+          pairs.push({ k: k, v: v });
+        }
+        function addRaw(raw) {
+          raw = (raw || "").trim().replace(/^[?&]+/, "");
+          if (!raw) return;
+          raw.split("&").forEach(function (seg) {
+            if (!seg) return;
+            var idx = seg.indexOf("=");
+            if (idx === -1) { add(seg, ""); return; }
+            pairs.push({ k: seg.slice(0, idx), v: seg.slice(idx + 1) });
+          });
+        }
+
+        BOOKING_FIELDS.forEach(function (f) { add(f, $(f).value); });
+        if ($("execute").checked) add("execute", "true");
+        addRaw($("extra").value);
+        addRaw($("utm").value);
+
+        if ($("gaOn").checked) {
+          GA_FIELDS.forEach(function (f) { add(f, $(f).value); });
+        }
+        return pairs;
+      }
+
+      function buildUrl() {
+        var env = ENVS[Number(envSel.value)] || ENVS[0];
+        var base = env.baseUrl.replace(/\/+$/, "");
+        var cid = encodeURIComponent(($("clientId").value || "").trim());
+        var aid = encodeURIComponent(($("agentId").value || "").trim());
+        var path = ($("path").value || "").trim();
+        if (path && path[0] !== "/") path = "/" + path;
+
+        var url = base;
+        if (cid) url += "/" + cid;
+        if (aid) url += "/" + aid;
+        url += path;
+
+        var pairs = buildParts();
+        if (pairs.length) {
+          var qs = pairs
+            .map(function (p) { return p.v === "" ? p.k : p.k + "=" + p.v; })
+            .join("&");
+          url += "?" + qs;
+        }
+        return { url: url, pairs: pairs };
+      }
+
+      function highlight(url) {
+        var qi = url.indexOf("?");
+        if (qi === -1) return escapeHtml(url);
+        var headHtml = escapeHtml(url.slice(0, qi + 1));
+        var qs = url.slice(qi + 1);
+        var parts = qs.split("&").map(function (seg) {
+          var idx = seg.indexOf("=");
+          if (idx === -1) return '<span class="k">' + escapeHtml(seg) + "</span>";
+          return (
+            '<span class="k">' + escapeHtml(seg.slice(0, idx)) + "</span>=" +
+            '<span class="v">' + escapeHtml(seg.slice(idx + 1)) + "</span>"
+          );
+        });
+        return headHtml + parts.join("&");
+      }
+
+      function escapeHtml(s) {
+        return s.replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+
+      function render() {
+        var r = buildUrl();
+        $("preview").innerHTML = highlight(r.url);
+        var tbl = $("paramsTable");
+        tbl.innerHTML = "";
+        r.pairs.forEach(function (p) {
+          var tr = document.createElement("tr");
+          var td1 = document.createElement("td");
+          var td2 = document.createElement("td");
+          td1.textContent = p.k;
+          td2.textContent = p.v;
+          tr.appendChild(td1); tr.appendChild(td2);
+          tbl.appendChild(tr);
+        });
+        saveState();
+        return r.url;
+      }
+
+      // ---- Realistic GA linker generators ----
+      function nowSec() { return Math.floor(Date.now() / 1000); }
+      function rand(n) {
+        var s = "";
+        var chars = "0123456789";
+        for (var i = 0; i < n; i++) s += chars[Math.floor(Math.random() * 10)];
+        return s;
+      }
+      function genGa() {
+        // GA1.1.<random10>.<epoch>
+        return "GA1.1." + rand(10) + "." + nowSec();
+      }
+      function b64(s) {
+        return btoa(s).replace(/=+$/, "");
+      }
+      function genGl() {
+        // Approximate the _gl cross-domain linker blob shape:
+        // 1*<hash>*_ga*<enc>*_gcl_au*<enc>
+        var ga = b64("GA1.1." + rand(10) + "." + nowSec());
+        var au = b64(rand(9) + "." + nowSec());
+        var hash = Math.random().toString(36).slice(2, 9);
+        return "1*" + hash + "*_ga*" + ga + "*_gcl_au*" + au;
+      }
+      function genGclid() {
+        return "EAIaIQ" + Math.random().toString(36).slice(2).replace(/[^a-z0-9]/g, "") + rand(8);
+      }
+
+      // ---- Wire up ----
+      TEXT_FIELDS.forEach(function (f) { $(f).addEventListener("input", render); });
+      CHECK_FIELDS.forEach(function (f) { $(f).addEventListener("change", render); });
+      envSel.addEventListener("change", render);
+
+      $("fillDates").addEventListener("click", function () {
+        var d = new Date();
+        d.setDate(d.getDate() + 30);
+        var d2 = new Date(d);
+        d2.setDate(d2.getDate() + 2);
+        var fmt = function (x) {
+          return (
+            String(x.getMonth() + 1).padStart(2, "0") + "/" +
+            String(x.getDate()).padStart(2, "0") + "/" +
+            x.getFullYear()
+          );
+        };
+        $("A").value = fmt(d);
+        $("D").value = fmt(d2);
+        render();
+      });
+
+      $("genGl").addEventListener("click", function () {
+        $("gaOn").checked = true;
+        $("_ga").value = genGa();
+        $("_gl").value = genGl();
+        $("gclid").value = genGclid();
+        render();
+      });
+
+      $("clearGa").addEventListener("click", function () {
+        GA_FIELDS.forEach(function (f) { $(f).value = ""; });
+        render();
+      });
+
+      $("copy").addEventListener("click", function () {
+        var url = render();
+        var done = function () { showToast("Copied to clipboard"); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done, function () { legacyCopy(url); done(); });
+        } else { legacyCopy(url); done(); }
+      });
+
+      function legacyCopy(text) {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+
+      $("open").addEventListener("click", function () {
+        var url = render();
+        window.open(url, "_blank", "noopener");
+      });
+
+      $("openTester").addEventListener("click", function () {
+        // Hand the pieces to the iframe tester via its localStorage keys, then
+        // open it. Keys mirror the bundle's `iframeTester.` prefix.
+        try {
+          var env = ENVS[Number(envSel.value)] || ENVS[0];
+          var pairs = buildParts();
+          var qs = pairs
+            .map(function (p) { return p.v === "" ? p.k : p.k + "=" + p.v; })
+            .join("&");
+          localStorage.setItem("iframeTester.baseUrl", env.baseUrl);
+          localStorage.setItem("iframeTester.clientId", ($("clientId").value || "").trim());
+          localStorage.setItem("iframeTester.agentId", ($("agentId").value || "").trim());
+          localStorage.setItem("iframeTester.searchParams", qs);
+        } catch (e) {}
+        window.open("/pagestest/iframe-tester.html", "_blank", "noopener");
+      });
+
+      $("reset").addEventListener("click", function () {
+        try { localStorage.removeItem(LS); } catch (e) {}
+        TEXT_FIELDS.forEach(function (f) { $(f).value = ""; });
+        $("execute").checked = false;
+        $("gaOn").checked = true;
+        envSel.value = "0";
+        render();
+      });
+
+      function showToast(msg) {
+        var t = $("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(function () { t.classList.remove("show"); }, 1600);
+      }
+
+      // ---- Init ----
+      (function init() {
+        loadState();
+        // Sensible defaults on a truly empty first load.
+        if (!$("clientId").value && !$("A").value) {
+          $("clientId").value = "12274";
+          $("agentId").value = "1";
+          $("A").value = "10/10/2026";
+          $("D").value = "10/12/2026";
+          $("Ad").value = "3";
+          $("Pc").value = "Beach Villa";
+        }
+        render();
+      })();
+    </script>
+  </body>
+</html>
